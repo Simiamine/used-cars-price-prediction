@@ -1,6 +1,32 @@
-venv-used-cars/venv/
+# === ENVIRONNEMENT PYTHON ===
 __pycache__/
-.ipynb_checkpoints/
-*.pyc
-.DS_Store
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# === ENVIRONNEMENT VIRTUEL ===
 venv-used-cars/
+.env/
+.venv/
+
+# === FICHIERS JUPYTER NOTEBOOK (optionnel)
+.ipynb_checkpoints/
+
+# === VSCode ===
+.vscode/
+
+# === macOS ===
+.DS_Store
+
+# === LOGS & TEMPORAIRE ===
+*.log
+*.tmp
+*.bak
+
+# === FICHIERS DE CONFIG PERSO ===
+.env
+*.env
