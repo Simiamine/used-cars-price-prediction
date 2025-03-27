@@ -30,3 +30,5 @@ venv-used-cars/
 # === FICHIERS DE CONFIG PERSO ===
 .env
 *.env
+
+data/vehicles.csv
