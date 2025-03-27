@@ -1,38 +1,42 @@
-# scripts/preprocessing.py
-
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 
-def load_and_clean_data(filepath: str) -> pd.DataFrame:
-    df = pd.read_csv(filepath)
+def preprocess_vehicle_data(path="../data/vehicles.csv"):
+    df = pd.read_csv(path)
 
-    # Colonnes à supprimer car inutiles ou redondantes
-    drop_cols = [
-        'url', 'city', 'city_url', 'make', 'title_status',
-        'VIN', 'size', 'image_url', 'desc', 'lat', 'long'
+    # Supprimer colonnes inutiles
+    cols_to_drop = [
+        'url', 'region_url', 'VIN', 'lat', 'long', 'image_url',
+        'description', 'id', 'region', 'county'
     ]
-    df = df.drop(columns=drop_cols, errors='ignore')
+    df.drop(columns=cols_to_drop, inplace=True)
 
-    # Supprimer les lignes avec des valeurs manquantes
-    df = df.dropna()
+    # Garder uniquement les colonnes utiles
+    columns_to_keep = [
+        'price', 'year', 'manufacturer', 'condition', 'cylinders',
+        'fuel', 'odometer', 'transmission', 'drive', 'type',
+        'paint_color', 'state', 'title_status', 'posting_date'
+    ]
+    df = df[columns_to_keep]
 
-    # On garde seulement les prix entre 1 000 et 40 000 pour éviter les valeurs aberrantes
-    df = df[(df['price'] > 1000) & (df['price'] < 40000)]
+    # Supprimer les lignes avec NaN
+    df.dropna(inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
-    # Garder les années raisonnables
-    df = df[df['year'] > 2000]
+    # ✅ Transformation en datetime avec prise en charge des fuseaux horaires mixtes
+    df['posting_date'] = pd.to_datetime(df['posting_date'], errors='coerce', utc=True)
 
-    # Arrondir l’odomètre aux 5000 km pour limiter les valeurs uniques
-    df['odometer'] = df['odometer'] // 5000
+    # 🔎 Filtrer les lignes avec conversion échouée
+    df = df[df['posting_date'].notna()]
 
-    # Encodage des colonnes catégorielles
-    categorical_cols = df.select_dtypes(include='object').columns
-    for col in categorical_cols:
-        le = LabelEncoder()
-        df[col] = le.fit_transform(df[col].astype(str))
+    # Extraire des informations temporelles
+    df['year_posted'] = df['posting_date'].dt.year
+    df['month_posted'] = df['posting_date'].dt.month
+    df['weekday_posted'] = df['posting_date'].dt.weekday
 
-    # Convertir year et odometer en entiers
-    df['year'] = df['year'].astype(int)
-    df['odometer'] = df['odometer'].astype(int)
+    # Filtrer les prix aberrants
+    df = df[(df['price'] > 100) & (df['price'] < 250000)]
+    
+    # Optionnel : supprimer la colonne brute
+    df.drop(columns=['posting_date'], inplace=True)
 
     return df
